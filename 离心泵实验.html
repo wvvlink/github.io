@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离心特性曲线测定实验平台</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Microsoft Yahei", sans-serif; }
+        body { max-width: 1400px; margin: 0 auto; padding: 20px; background: #f5f7fa; }
+        h1 { color: #2c3e50; margin-bottom: 20px; text-align: center; }
+        .tab { display: flex; gap: 10px; margin-bottom: 20px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; background: #ecf0f1; transition: 0.2s; }
+        .tab button.active { background: #2980b9; color: white; }
+        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #34495e; color: white; font-weight: 600; }
+        td { background: #fff; }
+        input { width: 110px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .btn-calc { padding: 12px 24px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 10px 0; font-size: 15px; }
+        .btn-calc:hover { background: #219a52; }
+        #chartContainer { height: 480px; margin-top: 20px; }
+        .result-summary { margin-top: 20px; padding: 18px; background: #e8f4f8; border-radius: 6px; border-left: 5px solid #2980b9; }
+        .prestudy-section { margin-bottom: 25px; }
+        .prestudy-section h4 { color: #2980b9; margin-bottom: 10px; font-size: 18px; }
+        .formula { 
+            background: #f0f7ff; 
+            padding: 15px; 
+            border-left: 5px solid #2980b9; 
+            margin: 12px 0; 
+            font-family: "Times New Roman", serif; 
+            font-size: 17px;
+            overflow-x: auto;
+        }
+        .param-table {
+            width: 80%;
+            margin: 10px 0;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .param-table th, .param-table td {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            text-align: left;
+        }
+        .param-table th {
+            background: #e0e9f2;
+            color: #2c3e50;
+        }
+        .data-result-table {
+            width: 100%;
+            margin: 15px 0;
+            border-collapse: collapse;
+        }
+        .data-result-table th {
+            background: #2980b9;
+        }
+        .data-result-table td {
+            padding: 8px;
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <h1>离心特性曲线测定实验平台</h1>
+    <div class="tab">
+        <button class="tab-btn active" onclick="switchTab('prestudy')">预习报告</button>
+        <button class="tab-btn" onclick="switchTab('data')">数据采集</button>
+        <button class="tab-btn" onclick="switchTab('result')">结果展示</button>
+    </div>
+
+    <!-- 预习报告模块（公式显示优化） -->
+    <div id="prestudy" class="tab-content active">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">实验预习报告</h3>
+        
+        <div class="prestudy-section">
+            <h4>一、实验目的</h4>
+            <p>1. 掌握离心泵特性曲线的测定原理和方法，理解流量、扬程、轴功率与效率之间的变化规律；</p>
+            <p>2. 测定某一恒定转速下离心泵的三条核心特性曲线：流量-扬程（Q-H）、流量-轴功率（Q-P）、流量-效率（Q-η）；</p>
+            <p>3. 学会分析特性曲线的物理意义，掌握泵的高效运行区间判断方法；</p>
+            <p>4. 熟悉实验数据采集、处理与可视化的完整流程，培养工程实践能力。</p>
+        </div>
+
+        <div class="prestudy-section">
+            <h4>二、实验原理</h4>
+            <p>离心泵通过叶轮高速旋转产生离心力，将机械能转化为流体的动能与压能。在恒定转速下，泵的性能由其结构决定，不同流量工况下的性能参数可通过实验测定。</p>
+            
+            <h5 style="margin: 12px 0; color: #34495e;">1. 扬程 \(H\) 的计算</h5>
+            <p>扬程是单位重量流体通过泵后获得的能量，由进出口压力差、位差和速度差共同决定。实验中忽略进出口位差和速度差（管径相同），简化为：</p>
+            <div class="formula">
+                \[ H = \frac{P_2 - P_1}{\rho g} + \frac{u_2^2 - u_1^2}{2g} + \Delta z \approx \frac{P_2 - P_1}{\rho g} \]
+            </div>
+            <table class="param-table">
+                <tr>
+                    <th>符号</th>
+                    <th>物理意义</th>
+                    <th>单位</th>
+                </tr>
+                <tr>
+                    <td>\(P_1, P_2\)</td>
+                    <td>泵进出口压力</td>
+                    <td>Pa</td>
+                </tr>
+                <tr>
+                    <td>\(\rho\)</td>
+                    <td>流体密度（水取1000）</td>
+                    <td>kg/m³</td>
+                </tr>
+                <tr>
+                    <td>\(g\)</td>
+                    <td>重力加速度（取9.81）</td>
+                    <td>m/s²</td>
+                </tr>
+                <tr>
+                    <td>\(u_1, u_2\)</td>
+                    <td>进出口流速</td>
+                    <td>m/s</td>
+                </tr>
+                <tr>
+                    <td>\(\Delta z\)</td>
+                    <td>进出口位差</td>
+                    <td>m</td>
+                </tr>
+            </table>
+
+            <h5 style="margin: 12px 0; color: #34495e;">2. 轴功率 \(P\) 与效率 \(\eta\) 的计算</h5>
+            <p>轴功率是电机传递给泵轴的实际功率，由功率表直接测得。效率是泵的有效功率与轴功率的比值，反映能量利用程度：</p>
+            <div class="formula">
+                \[
+                \begin{align*}
+                P_{\text{有效}} &= \rho g Q H \quad (\text{单位：W}) \\
+                \eta &= \frac{P_{\text{有效}}}{P_{\text{轴}}} \times 100\% = \frac{\rho g Q H}{1000 P_{\text{轴}}} \times 100\%
+                \end{align*}
+                \]
+            </div>
+            <table class="param-table">
+                <tr>
+                    <th>符号</th>
+                    <th>物理意义</th>
+                    <th>单位</th>
+                </tr>
+                <tr>
+                    <td>\(Q\)</td>
+                    <td>体积流量</td>
+                    <td>m³/s</td>
+                </tr>
+                <tr>
+                    <td>\(P_{\text{轴}}\)</td>
+                    <td>泵轴输入功率</td>
+                    <td>kW</td>
+                </tr>
+                <tr>
+                    <td>\(P_{\text{有效}}\)</td>
+                    <td>流体获得的有效功率</td>
+                    <td>W</td>
+                </tr>
+                <tr>
+                    <td>\(\eta\)</td>
+                    <td>泵的效率</td>
+                    <td>%</td>
+                </tr>
+            </table>
+
+            <h5 style="margin: 12px 0; color: #34495e;">3. 特性曲线的物理意义</h5>
+            <p>- <strong>Q-H 曲线</strong>：随流量 \(Q\) 增大，扬程 \(H\) 通常缓慢下降，反映泵克服管路阻力的能力；</p>
+            <p>- <strong>Q-P 曲线</strong>：随流量 \(Q\) 增大，轴功率 \(P\) 一般上升，小流量时存在最低功率点（启动时应关阀）；</p>
+            <p>- <strong>Q-η 曲线</strong>：效率随流量先增后减，存在一个峰值，对应泵的最佳工况点，实际运行应尽量靠近该区间。</p>
+        </div>
+
+        <div class="prestudy-section">
+            <h4>三、实验步骤</h4>
+            <ol style="margin-left: 20px; line-height: 1.8;">
+                <li>设备检查：确认泵体、管路、阀门、流量计、压力表、功率表等完好，灌泵排气并排尽泵内空气；</li>
+                <li>启动准备：关闭出口阀门，打开进口阀门，启动电机，待转速稳定后缓慢开启出口阀门；</li>
+                <li>工况调节：逐步调节出口阀门开度，从接近零流量到最大流量，依次设置5~8个稳定工况点；</li>
+                <li>数据记录：待各仪表读数稳定后，同步记录每个工况下的流量、进出口压力、轴功率数据；</li>
+                <li>结束操作：先关闭出口阀门，再停止电机，清理设备并恢复初始状态；</li>
+                <li>数据处理：将采集数据代入公式计算 \(H\)、\(\eta\)，绘制三条特性曲线，分析实验结果。</li>
+            </ol>
+        </div>
+
+        <div class="prestudy-section">
+            <h4>四、注意事项与补充说明</h4>
+            <p><strong>⚠️ 安全操作：</strong></p>
+            <p>1. 严禁在出口阀门全关状态下长时间运行泵（一般不超过3分钟），避免泵体过热损坏；</p>
+            <p>2. 启动前必须灌泵排气，否则会发生气缚现象，导致泵无法正常输送流体；</p>
+            <p>3. 仪表读数时需待指针稳定后再记录，避免读取波动值造成误差；</p>
+            <p>4. 若发现异常噪音、振动或泄漏，应立即停机检查，排除故障后再继续实验。</p>
+            
+            <p><strong>📌 数据处理与误差分析：</strong></p>
+            <p>1. 流量单位需统一转换为 m³/s（1 m³/h = 1/3600 m³/s），压力单位转换为 Pa（1 MPa = 10⁶ Pa）；</p>
+            <p>2. 误差来源主要包括：仪表精度误差、读数误差、工况不稳定、管路泄漏等，实验中应尽量减小人为误差；</p>
+            <p>3. 若效率曲线出现异常波动，需检查数据录入是否正确，或排查是否存在气蚀、泄漏等问题。</p>
+            
+            <p><strong>💡 工程应用：</strong></p>
+            <p>特性曲线是泵选型与运行调节的核心依据：高效区间越宽，泵的适应性越强；实际生产中需根据管路阻力曲线与泵特性曲线的交点确定工作点，保证系统高效稳定运行。</p>
+        </div>
+    </div>
+
+    <!-- 数据采集模块（表格与输入优化） -->
+    <div id="data" class="tab-content">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">实验数据采集</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>流量 Q (m³/h)</th>
+                    <th>进口压力 P₁ (MPa)</th>
+                    <th>出口压力 P₂ (MPa)</th>
+                    <th>轴功率 P (kW)</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+                <tr>
+                    <td>1</td>
+                    <td><input type="number" step="0.01" class="q" placeholder="例：2.50"></td>
+                    <td><input type="number" step="0.001" class="p1" placeholder="例：0.020"></td>
+                    <td><input type="number" step="0.001" class="p2" placeholder="例：0.250"></td>
+                    <td><input type="number" step="0.01" class="p" placeholder="例：1.20"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><input type="number" step="0.01" class="q" placeholder="例：3.00"></td>
+                    <td><input type="number" step="0.001" class="p1" placeholder="例：0.022"></td>
+                    <td><input type="number" step="0.001" class="p2" placeholder="例：0.235"></td>
+                    <td><input type="number" step="0.01" class="p" placeholder="例：1.35"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><input type="number" step="0.01" class="q" placeholder="例：3.50"></td>
+                    <td><input type="number" step="0.001" class="p1" placeholder="例：0.025"></td>
+                    <td><input type="number" step="0.001" class="p2" placeholder="例：0.220"></td>
+                    <td><input type="number" step="0.01" class="p" placeholder="例：1.50"></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><input type="number" step="0.01" class="q" placeholder="例：4.00"></td>
+                    <td><input type="number" step="0.001" class="p1" placeholder="例：0.028"></td>
+                    <td><input type="number" step="0.001" class="p2" placeholder="例：0.200"></td>
+                    <td><input type="number" step="0.01" class="p" placeholder="例":1.65></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><input type="number" step="0.01" class="q" placeholder="例：4.50"></td>
+                    <td><input type="number" step="0.001" class="p1" placeholder="例：0.030"></td>
+                    <td><input type="number" step="0.001" class="p2" placeholder="例：0.180"></td>
+                    <td><input type="number" step="0.01" class="p" placeholder="例：1.80"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><input type="number" step="0.01" class="q" placeholder="例：5.00"></td>
+                    <td><input type="number" step="0.001" class="p1" placeholder="例：0.032"></td>
+                    <td><input type="number" step="0.001" class="p2" placeholder="例：0.160"></td>
+                    <td><input type="number" step="0.01" class="p" placeholder="例：1.95"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn-calc" onclick="calculateAndPlot()">计算并生成特性曲线</button>
+    </div>
+
+    <!-- 结果展示模块（数据表格+图表优化） -->
+    <div id="result" class="tab-content">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">实验结果与特性曲线</h3>
+        <div id="dataResultTableContainer" style="margin-bottom: 20px;"></div>
+        <div id="chartContainer"></div>
+        <div class="result-summary" id="resultSummary"></div>
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function calculateAndPlot() {
+            const rows = document.querySelectorAll('#dataTable tr');
+            const Q = [], H = [], P = [], η = [];
+            const ρ = 1000; // 水的密度 kg/m³
+            const g = 9.81;  // 重力加速度 m/s²
+            const resultData = [];
+
+            rows.forEach(row => {
+                const qInput = row.querySelector('.q');
+                const p1Input = row.querySelector('.p1');
+                const p2Input = row.querySelector('.p2');
+                const pInput = row.querySelector('.p');
+                
+                const q = qInput ? parseFloat(qInput.value) : NaN;
+                const p1 = p1Input ? parseFloat(p1Input.value) : NaN;
+                const p2 = p2Input ? parseFloat(p2Input.value) : NaN;
+                const p = pInput ? parseFloat(pInput.value) : NaN;
+
+                if (!isNaN(q) && !isNaN(p1) && !isNaN(p2) && !isNaN(p) && p > 0) {
+                    const q_m3s = q / 3600; // 转换为 m³/s
+                    const delta_p = (p2 - p1) * 1e6; // 转换为 Pa
+                    const h = delta_p / (ρ * g); // 扬程 H (m)
+                    const power_input = p * 1000; // 转换为 W
+                    const power_output = ρ * g * q_m3s * h;
+                    const eff = (power_output / power_input) * 100; // 效率 %
+
+                    const qFixed = q.toFixed(2);
+                    const hFixed = h.toFixed(2);
+                    const pFixed = p.toFixed(2);
+                    const effFixed = eff.toFixed(2);
+
+                    Q.push(qFixed);
+                    H.push(hFixed);
+                    P.push(pFixed);
+                    η.push(effFixed);
+                    resultData.push({
+                        q: qFixed,
+                        p1: p1.toFixed(3),
+                        p2: p2.toFixed(3),
+                        p: pFixed,
+                        h: hFixed,
+                        eff: effFixed
+                    });
+                }
+            });
+
+            if (Q.length === 0) {
+                alert('请输入完整有效的实验数据！');
+                return;
+            }
+
+            // 渲染计算后的数据表格
+            let tableHTML = `
+                <h4 style="margin-bottom: 10px; color: #2c3e50;">计算结果数据表</h4>
+                <table class="data-result-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>流量 Q (m³/h)</th>
+                            <th>进口压力 P₁ (MPa)</th>
+                            <th>出口压力 P₂ (MPa)</th>
+                            <th>轴功率 P (kW)</th>
+                            <th>扬程 H (m)</th>
+                            <th>效率 η (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            resultData.forEach((data, index) => {
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${data.q}</td>
+                        <td>${data.p1}</td>
+                        <td>${data.p2}</td>
+                        <td>${data.p}</td>
+                        <td>${data.h}</td>
+                        <td>${data.eff}</td>
+                    </tr>`;
+            });
+            tableHTML += `</tbody></table>`;
+            document.getElementById('dataResultTableContainer').innerHTML = tableHTML;
+
+            // 渲染结果摘要
+            const maxEff = Math.max(...η.map(e => parseFloat(e)));
+            const maxEffIndex = η.findIndex(e => parseFloat(e) === maxEff);
+            let summaryHTML = `<p><strong>实验数据摘要：</strong></p>
+            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.7;">
+                <li>有效工况组数：${Q.length}</li>
+                <li>流量范围：${Math.min(...Q.map(q => parseFloat(q)))} ~ ${Math.max(...Q.map(q => parseFloat(q)))} m³/h</li>
+                <li>扬程范围：${Math.min(...H.map(h => parseFloat(h)))} ~ ${Math.max(...H.map(h => parseFloat(h)))} m</li>
+                <li>最高效率：<strong style="color: #e74c3c;">${maxEff.toFixed(2)} %</strong>（对应流量 ${Q[maxEffIndex]} m³/h）</li>
+            </ul>`;
+            document.getElementById('resultSummary').innerHTML = summaryHTML;
+
+            // 绘制多曲线图表
+            const ctx = document.createElement('canvas');
+            document.getElementById('chartContainer').innerHTML = '';
+            document.getElementById('chartContainer').appendChild(ctx);
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Q,
+                    datasets: [
+                        {
+                            label: 'Q-H 曲线 (扬程 m)',
+                            data: H,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            tension: 0.3,
+                            yAxisID: 'y',
+                            fill: true
+                        },
+                        {
+                            label: 'Q-P 曲线 (轴功率 kW)',
+                            data: P,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.3,
+                            yAxisID: 'y1',
+                            fill: true
+                        },
+                        {
+                            label: 'Q-η 曲线 (效率 %)',
+                            data: η,
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.3,
+                            yAxisID: 'y2',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { type: 'linear', position: 'left', title: { display: true, text: '扬程 H (m)', font: { size: 14 } } },
+                        y1: { type: 'linear', position: 'right', title: { display: true, text: '轴功率 P (kW)', font: { size: 14 } }, grid: { drawOnChartArea: false } },
+                        y2: { type: 'linear', position: 'right', title: { display: true, text: '效率 η (%)', font: { size: 14 } }, grid: { drawOnChartArea: false } },
+                        x: { title: { display: true, text: '流量 Q (m³/h)', font: { size: 14 } } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 13 } } },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                label: function(context) {
+                                    const unit = context.dataset.yAxisID === 'y' ? 'm' : context.dataset.yAxisID === 'y1' ? 'kW' : '%';
+                                    return `${context.dataset.label}: ${context.raw} ${unit}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            alert('✅ 数据计算完成，特性曲线与结果表格已生成！');
+        }
+    </script>
+</body>
+</html>
